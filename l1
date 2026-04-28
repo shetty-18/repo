@@ -1,0 +1,12 @@
+Building and Running the Project
+1. Compile the project:
+mvn compile
+2. Run tests:
+mvn test
+
+3. Package the application:
+mvn package
+4. Clean and rebuild:
+mvn clean package
+5. Run the packaged JAR:
+java -cp target/my-maven-app-1.0-SNAPSHOT.jar com.example.App
