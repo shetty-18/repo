@@ -1,0 +1,351 @@
+Here is **Experiment 8 — FULL STEP-BY-STEP EXECUTION (NO SKIP)** exactly as you should do in terminal and Jenkins.
+
+---
+
+# PART 1: Create Maven Project
+
+## Step 1: Create folder
+
+```bash id="1xk7k7"
+mkdir Lab8
+cd Lab8
+```
+
+Check:
+
+```bash id="9v0h2y"
+pwd
+```
+
+---
+
+## Step 2: Create Maven project
+
+```bash id="6v4p3d"
+mvn archetype:generate \
+-DgroupId=com.example \
+-DartifactId=jenkins-ansible \
+-DarchetypeArtifactId=maven-archetype-quickstart \
+-DinteractiveMode=false
+```
+
+Wait → BUILD SUCCESS
+
+---
+
+## Step 3: Enter project
+
+```bash id="3m6h1z"
+cd jenkins-ansible
+ls
+```
+
+You should see:
+
+```text id="w1u9xk"
+pom.xml  src
+```
+
+---
+
+## Step 4: Edit pom.xml
+
+```bash id="6p7u0y"
+nano pom.xml
+```
+
+Add inside `<properties>`:
+
+```xml id="0x7h9d"
+<properties>
+    <maven.compiler.source>18</maven.compiler.source>
+    <maven.compiler.target>18</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+</properties>
+```
+
+Save:
+
+```
+CTRL + X → Y → ENTER
+```
+
+(as shown page 1) 
+
+---
+
+## Step 5: Build project
+
+```bash id="7r6f2q"
+mvn clean package
+```
+
+Check:
+
+```bash id="3r4g1p"
+ls target
+```
+
+You must see:
+
+```text id="6k9l3m"
+jenkins-ansible-1.0-SNAPSHOT.jar
+```
+
+---
+
+# PART 2: Create Ansible Setup
+
+---
+
+## Step 6: Create inventory file
+
+```bash id="5d2t1a"
+nano inventory
+```
+
+Paste:
+
+```ini id="1m3b8x"
+[web]
+localhost ansible_connection=local
+```
+
+Save.
+
+---
+
+## Step 7: Create playbook
+
+```bash id="7q1e2y"
+nano deploy.yml
+```
+
+Paste:
+
+```yaml id="3c8w0k"
+- name: Deploy Maven Artifact
+  hosts: web
+
+  tasks:
+    - name: Create deployment directory
+      file:
+        path: /var/jenkins_home/deploy
+        state: directory
+        mode: '0755'
+
+    - name: Copy artifact
+      copy:
+        src: target/jenkins-ansible-1.0-SNAPSHOT.jar
+        dest: /var/jenkins_home/deploy/jenkins-ansible.jar
+```
+
+Save.
+
+(as shown page 2) 
+
+---
+
+# PART 3: Install Ansible inside Jenkins
+
+---
+
+## Step 8: Enter Jenkins container
+
+```bash id="4w8y6r"
+docker exec -u 0 -it jenkins-batch1 bash
+```
+
+---
+
+## Step 9: Install Ansible
+
+```bash id="5k3d9c"
+apt update
+apt install ansible -y
+```
+
+Exit:
+
+```bash id="8m2p4v"
+exit
+```
+
+(as shown page 2) 
+
+---
+
+# PART 4: Push Project to GitHub
+
+---
+
+## Step 10: Initialize Git
+
+```bash id="6t8u3n"
+git init
+git add .
+git commit -m "Initial commit Maven with Ansible playbook"
+```
+
+---
+
+## Step 11: Connect GitHub repo
+
+```bash id="2j4r8p"
+git remote add origin https://github.com/username/repo.git
+```
+
+---
+
+## Step 12: Push
+
+```bash id="9c7k1w"
+git push -u origin master
+```
+
+(as shown page 2–3) 
+
+---
+
+# PART 5: Start Jenkins
+
+---
+
+## Step 13: Check container
+
+```bash id="8z4t2s"
+docker ps
+```
+
+If not running:
+
+```bash id="7h1m5q"
+docker start jenkins-batch1
+```
+
+---
+
+## Step 14: Open Jenkins
+
+Open browser:
+
+```text id="4f2y8n"
+http://localhost:8081
+```
+
+(as shown page 3) 
+
+---
+
+# PART 6: Create Jenkins Pipeline
+
+---
+
+## Step 15: Create job
+
+* Click **New Item**
+* Enter name
+* Select **Pipeline**
+* Click OK
+
+---
+
+## Step 16: Add Pipeline Script
+
+Paste:
+
+```groovy id="9v2m5k"
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven-3.9'
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                git 'https://github.com/username/repo.git'
+            }
+        }
+
+        stage('Build Maven Project') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+
+        stage('Deploy using Ansible') {
+            steps {
+                sh 'ansible-playbook deploy.yml -i inventory'
+            }
+        }
+    }
+}
+```
+
+Replace:
+
+```
+username/repo
+```
+
+(as shown page 3–4) 
+
+Click **Save**
+
+---
+
+# PART 7: Run Pipeline
+
+---
+
+## Step 17: Click Build Now
+
+Jenkins will:
+
+1. Checkout code
+2. Build project
+3. Deploy using Ansible
+
+(as shown page 4) 
+
+---
+
+# PART 8: Verify Deployment
+
+---
+
+## Step 18: Check deployed file
+
+```bash id="7x2y4p"
+sudo ls /var/lib/docker/volumes/jenkins_data1/_data/deploy
+```
+
+Expected:
+
+```text id="3v8m1k"
+jenkins-ansible.jar
+```
+
+---
+
+# FINAL RESULT
+
+You have:
+
+* Maven project created
+* JAR built
+* Ansible playbook created
+* Jenkins pipeline created
+* Automatic deployment completed
+
+---
+
+If you get ANY error (very common here), send:
+
+* terminal error
+* Jenkins console output
+
+I’ll fix it step-by-step without skipping anything.
