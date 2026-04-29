@@ -1,0 +1,360 @@
+You’re asking for **complete execution from start to end**, including Jenkins part also. I’ll give you **exact commands + what to click + what happens**, no skipping.
+
+---
+
+# PART 1: Run Jenkins (from your Observation PDF)
+
+## Step 1: Check container
+
+```bash
+docker ps
+```
+
+You should see container like:
+
+```
+jenkins-batch1
+```
+
+---
+
+## Step 2: If not running → start it
+
+```bash
+docker start jenkins-batch1
+```
+
+---
+
+## Step 3: Open Jenkins UI
+
+Open browser:
+
+```
+http://localhost:8081
+```
+
+Login using your username & password
+(as mentioned in previous experiment)
+
+---
+
+## Step 4: Check plugins (VERY IMPORTANT)
+
+Go to:
+
+```
+Manage Jenkins → Plugins → Installed Plugins
+```
+
+Check these:
+
+* Git plugin
+* Pipeline
+* Maven Integration Plugin
+
+If missing:
+
+Go to:
+
+```
+Manage Jenkins → Plugins → Available Plugins
+```
+
+Search → Install
+
+---
+
+## Step 5: Restart Jenkins
+
+Either:
+
+```bash
+docker restart jenkins-batch1
+```
+
+OR open in browser:
+
+```
+http://localhost:8081/restart
+```
+
+(as shown in page 2 image) 
+
+---
+
+## Step 6: Configure Maven
+
+Go to:
+
+```
+Manage Jenkins → Tools
+```
+
+Scroll down → Maven → Add Maven
+
+Fill:
+
+* Name: Maven-3.9
+* Check: Install automatically
+* Select version
+
+Click **Save**
+
+(as shown in page 2 screenshot) 
+
+---
+
+# PART 2: Push Maven Project to GitHub
+
+---
+
+## Step 7: Configure Git (only once)
+
+```bash
+git config --global user.name "yourname"
+git config --global user.email "your@email.com"
+```
+
+Verify:
+
+```bash
+git config --list
+```
+
+---
+
+## Step 8: Create repository in GitHub
+
+Go to:
+
+```
+https://github.com
+```
+
+Steps:
+
+* Click **New Repository**
+* Name: `maven-project`
+* Choose Public/Private
+* DO NOT add README
+* Click Create
+
+(as shown in page 4) 
+
+---
+
+## Step 9: Go to your project
+
+```bash
+cd ~/migrate/Calculator
+```
+
+---
+
+## Step 10: Initialize Git
+
+```bash
+git init
+```
+
+---
+
+## Step 11: Create .gitignore
+
+```bash
+touch .gitignore
+vim .gitignore
+```
+
+Paste:
+
+```
+target/
+*.log
+*.class
+.idea/
+.vscode/
+```
+
+Save:
+
+```
+ESC
+:wq
+```
+
+---
+
+## Step 12: Add and commit
+
+```bash
+git add .
+git commit -m "Initial commit - Maven project"
+```
+
+---
+
+## Step 13: Connect GitHub repo
+
+```bash
+git remote add origin https://github.com/username/maven-project.git
+```
+
+(Replace username)
+
+---
+
+## Step 14: Push code
+
+```bash
+git branch -M main
+git push -u origin main
+```
+
+---
+
+## Step 15: Enter credentials
+
+Git will ask:
+
+* Username → your GitHub username
+* Password → **Personal Access Token (NOT password)**
+
+---
+
+## Step 16: Create Token
+
+Go to:
+
+```
+GitHub → Profile → Settings → Developer settings
+→ Personal access tokens → Generate new token
+```
+
+Select:
+
+```
+repo
+```
+
+Copy token → paste when asked
+
+(as explained in page 5) 
+
+---
+
+# PART 3: Create Jenkins Pipeline
+
+---
+
+## Step 17: Create Pipeline Job
+
+Go to Jenkins:
+
+```
+New Item → Pipeline
+```
+
+Give name:
+
+```
+Maven-Pipeline
+```
+
+Click OK
+
+---
+
+## Step 18: Add Pipeline Script
+
+Scroll → Pipeline section
+
+Paste:
+
+```groovy
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven-3.9'
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                url: 'https://github.com/username/maven-project.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+    }
+}
+```
+
+Replace:
+
+```
+username → your GitHub username
+```
+
+(as shown in page 6 highlighted part) 
+
+Click **Save**
+
+---
+
+## Step 19: Run Pipeline
+
+Click:
+
+```
+Build Now
+```
+
+(as shown in page 7 image) 
+
+---
+
+## Step 20: Check Output
+
+Click build → Console Output
+
+You should see:
+
+```
+BUILD SUCCESS
+```
+
+Pipeline stages:
+
+* Checkout
+* Build
+* Test
+
+All should be green
+
+---
+
+# FINAL RESULT
+
+* Maven project runs
+* Code pushed to GitHub
+* Jenkins pipeline created
+* Build + test executed automatically
+
+---
+
+If something fails, don’t guess — send the exact error and I’ll fix it line-by-line.
