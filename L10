@@ -1,1 +1,355 @@
+Here is **Experiment 10 (Azure Pipeline) — COMPLETE STEP-BY-STEP EXECUTION**, exactly how you should do it without skipping anything.
+
+---
+
+# PART 1: Create Maven Project
+
+## Step 1: Create folder
+
+```bash
+mkdir Lab10
+cd Lab10
+```
+
+---
+
+## Step 2: Create Maven project
+
+```bash
+mvn archetype:generate \
+-DgroupId=com.devops.lab \
+-DartifactId=AzurePipeline \
+-DarchetypeArtifactId=maven-archetype-quickstart \
+-DinteractiveMode=false
+```
+
+Wait for:
+
+```
+BUILD SUCCESS
+```
+
+---
+
+## Step 3: Go to project
+
+```bash
+cd AzurePipeline
+ls
+```
+
+You should see:
+
+```
+pom.xml  src
+```
+
+---
+
+## Step 4: Edit pom.xml
+
+```bash
+nano pom.xml
+```
+
+Add inside `<properties>`:
+
+```xml
+<properties>
+    <maven.compiler.source>18</maven.compiler.source>
+    <maven.compiler.target>18</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+</properties>
+```
+
+Save:
+
+```
+CTRL + X → Y → ENTER
+```
+
+(as shown in page 1) 
+
+---
+
+# PART 2: Push Code to Azure Repos
+
+---
+
+## Step 5: Open Azure DevOps
+
+Go to your Azure DevOps:
+
+* Open your organization
+* Open your project
+
+Then go:
+
+```
+Repos → Files → Initialize
+```
+
+(as shown in page 1–2 screenshots) 
+
+---
+
+## Step 6: Get repository URL
+
+Click:
+
+```
+Clone → Copy HTTPS URL
+```
+
+---
+
+## Step 7: Create Personal Access Token
+
+Go to:
+
+```
+User Settings → Personal Access Token → New Token
+```
+
+Fill:
+
+* Name: anything
+* Scope:
+
+  * Code → Read & Write
+  * Agent Pools → Read & Manage
+
+Copy token (IMPORTANT)
+
+(as shown in page 3) 
+
+---
+
+## Step 8: Push code from terminal
+
+```bash
+git init
+git add .
+git commit -m "Initial commit"
+git remote add origin <your-repo-url>
+git branch -M master
+git push -u origin master
+```
+
+When asked:
+
+* Username → your Azure username
+* Password → paste PAT token
+
+---
+
+# PART 3: Create Azure Pipeline
+
+---
+
+## Step 9: Create pipeline
+
+Go to:
+
+```
+Pipelines → Create Pipeline
+```
+
+---
+
+## Step 10: Select repository
+
+Choose:
+
+```
+Azure Repos Git
+```
+
+Select your repository
+
+(as shown in page 4) 
+
+---
+
+## Step 11: Configure pipeline
+
+Choose:
+
+```
+Starter Pipeline
+```
+
+---
+
+## Step 12: Replace YAML
+
+Delete everything and paste:
+
+```yaml
+trigger:
+- master
+
+pool:
+  name: Default
+
+steps:
+- task: Maven@3
+  inputs:
+    mavenPomFile: 'AzurePipeline/pom.xml'
+    goals: 'clean install'
+    publishJUnitResults: true
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+```
+
+(as shown in page 5) 
+
+---
+
+## Step 13: Save and Run
+
+Click:
+
+```
+Save and Run
+```
+
+It may fail because agent is not configured.
+
+---
+
+# PART 4: Create Agent Pool
+
+---
+
+## Step 14: Go to Agent Pools
+
+```
+Organization Settings → Agent Pools → Default
+```
+
+(as shown page 5–6) 
+
+---
+
+## Step 15: Create Agent (Linux)
+
+In terminal:
+
+```bash
+mkdir myagent && cd myagent
+```
+
+Download agent (from Azure UI instructions)
+
+```bash
+tar zxvf vsts-agent-linux-x64-*.tar.gz
+```
+
+---
+
+## Step 16: Configure agent
+
+```bash
+./config.sh
+```
+
+Enter:
+
+```
+URL: https://dev.azure.com/your-org
+Authentication: PAT
+Token: (paste PAT)
+Agent pool: Default
+Agent name: anything
+Work folder: ENTER
+```
+
+(as shown in page 7) 
+
+---
+
+## Step 17: Run agent
+
+```bash
+./run.sh
+```
+
+DO NOT close terminal
+
+(as shown in page 8) 
+
+---
+
+## Step 18: Verify agent
+
+Go to:
+
+```
+Organization Settings → Agent Pools → Default
+```
+
+You should see agent **online**
+
+---
+
+# PART 5: Run Pipeline
+
+---
+
+## Step 19: Run pipeline
+
+Go to:
+
+```
+Pipelines → Run → Save and Run
+```
+
+If permission required:
+
+```
+Click View → Permit
+```
+
+(as shown in page 9) 
+
+---
+
+# PART 6: View Results
+
+---
+
+## Step 20: Check test reports
+
+Go to:
+
+```
+Pipelines → Runs → Tests
+```
+
+You will see:
+
+* Test results
+* Build success
+
+---
+
+# FINAL RESULT
+
+You successfully:
+
+* Created Maven project
+* Pushed to Azure Repo
+* Created pipeline
+* Configured agent
+* Ran CI build
+* Generated test reports
+
+---
+
+If anything fails, send:
+
+* error message
+* screenshot
+
+I will debug it step-by-step for you.
 
