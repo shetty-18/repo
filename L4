@@ -1,0 +1,415 @@
+Alright — here is **fully detailed, no-skip, step-by-step execution** exactly how you should type and do everything in terminal and files.
+
+---
+
+# PART A: Maven Project (Complete Execution)
+
+---
+
+## Step 0: Check tools (IMPORTANT)
+
+Before starting, run:
+
+```bash
+java -version
+mvn -version
+```
+
+If not installed → install Java & Maven first.
+
+---
+
+## Step 1: Create working folder
+
+```bash
+mkdir migrate
+cd migrate
+```
+
+Check:
+
+```bash
+pwd
+```
+
+You should be inside `migrate`.
+
+---
+
+## Step 2: Create Maven project
+
+```bash
+mvn archetype:generate \
+-DgroupId=com.example \
+-DartifactId=Calculator \
+-DarchetypeArtifactId=maven-archetype-quickstart \
+-DinteractiveMode=false
+```
+
+Wait until BUILD SUCCESS.
+
+Check:
+
+```bash
+ls
+```
+
+You should see:
+
+```
+Calculator
+```
+
+---
+
+## Step 3: Enter project
+
+```bash
+cd Calculator
+ls
+```
+
+You should see:
+
+```
+pom.xml  src
+```
+
+---
+
+## Step 4: Check folder structure
+
+```bash
+tree
+```
+
+(or `ls -R` if tree not installed)
+
+Expected:
+
+```
+src/main/java/com/example/App.java
+src/test/java/com/example/AppTest.java
+```
+
+---
+
+## Step 5: Edit App.java
+
+Open:
+
+```bash
+vim src/main/java/com/example/App.java
+```
+
+Press:
+
+```
+i   (to enter insert mode)
+```
+
+Delete everything and paste:
+
+```java
+package com.example;
+
+public class App {
+    public static void main(String[] args) {
+        System.out.println("Hello Gradle World!");
+
+        Calculator calc = new Calculator();
+
+        System.out.println("Addition: 15 + 25 = " + calc.add(15, 25));
+        System.out.println("Subtraction: 50 - 20 = " + calc.subtract(50, 20));
+        System.out.println("Multiplication: 7 * 8 = " + calc.multiply(7, 8));
+        System.out.println("Division: 100 / 4 = " + calc.divide(100, 4));
+    }
+}
+```
+
+Save and exit:
+
+```
+ESC
+:wq
+```
+
+---
+
+## Step 6: Create Calculator.java
+
+```bash
+vim src/main/java/com/example/Calculator.java
+```
+
+Press `i` and paste:
+
+```java
+package com.example;
+
+public class Calculator {
+
+    public int add(int a, int b) {
+        return a + b;
+    }
+
+    public int subtract(int a, int b) {
+        return a - b;
+    }
+
+    public int multiply(int a, int b) {
+        return a * b;
+    }
+
+    public double divide(int a, int b) {
+        if (b == 0) {
+            throw new IllegalArgumentException("Cannot divide by zero");
+        }
+        return (double) a / b;
+    }
+}
+```
+
+Save:
+
+```
+ESC
+:wq
+```
+
+---
+
+## Step 7: Edit AppTest.java
+
+```bash
+vim src/test/java/com/example/AppTest.java
+```
+
+Replace everything with:
+
+```java
+package com.example;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+public class AppTest extends TestCase {
+
+    private Calculator calculator;
+
+    public void setUp() {
+        calculator = new Calculator();
+    }
+
+    public void testAdd() {
+        assertEquals(40, calculator.add(15, 25));
+        assertEquals(0, calculator.add(-5, 5));
+    }
+
+    public void testSubtract() {
+        assertEquals(30, calculator.subtract(50, 20));
+        assertEquals(-10, calculator.subtract(5, 15));
+    }
+
+    public void testMultiply() {
+        assertEquals(56, calculator.multiply(7, 8));
+        assertEquals(0, calculator.multiply(10, 0));
+    }
+
+    public void testDivide() {
+        assertEquals(25.0, calculator.divide(100, 4), 0.01);
+        assertEquals(2.5, calculator.divide(5, 2), 0.01);
+    }
+
+    public void testDivideByZero() {
+        try {
+            calculator.divide(10, 0);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            assertTrue(true);
+        }
+    }
+}
+```
+
+Save:
+
+```
+ESC
+:wq
+```
+
+---
+
+## Step 8: Edit pom.xml
+
+```bash
+vim pom.xml
+```
+
+Find `<properties>` section OR add this:
+
+```xml
+<properties>
+    <maven.compiler.source>18</maven.compiler.source>
+    <maven.compiler.target>18</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+</properties>
+```
+
+Save:
+
+```
+ESC
+:wq
+```
+
+---
+
+## Step 9: Compile project
+
+```bash
+mvn compile
+```
+
+Expected:
+
+```
+BUILD SUCCESS
+```
+
+---
+
+## Step 10: Run tests
+
+```bash
+mvn test
+```
+
+Expected:
+
+```
+Tests run: 5, Failures: 0
+```
+
+---
+
+## Step 11: Package project
+
+```bash
+mvn package
+```
+
+Check:
+
+```bash
+ls target
+```
+
+You should see:
+
+```
+Calculator-1.0-SNAPSHOT.jar
+```
+
+---
+
+## Step 12: Run application
+
+```bash
+java -cp target/Calculator-1.0-SNAPSHOT.jar com.example.App
+```
+
+Output:
+
+```
+Hello Gradle World!
+Addition: 15 + 25 = 40
+Subtraction: 50 - 20 = 30
+Multiplication: 7 * 8 = 56
+Division: 100 / 4 = 25.0
+```
+
+---
+
+# PART B: Convert to Gradle
+
+---
+
+## Step 13: Convert project
+
+```bash
+gradle init
+```
+
+Select:
+
+```
+yes
+1 (Kotlin DSL)
+yes
+```
+
+---
+
+## Step 14: Open Gradle file
+
+```bash
+vim build.gradle.kts
+```
+
+Replace content with:
+
+```kotlin
+plugins {
+    java
+    application
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation("junit:junit:4.13.2")
+}
+
+application {
+    mainClass.set("com.example.App")
+}
+```
+
+Save.
+
+---
+
+## Step 15: Build project
+
+```bash
+gradle build
+```
+
+---
+
+## Step 16: Run project
+
+```bash
+gradle run
+```
+
+You will get same output.
+
+---
+
+## Step 17: Remove Maven file (optional)
+
+```bash
+rm pom.xml
+```
+
+---
+
+# If ANY ERROR comes
+
+Send screenshot or error text — I will fix it step-by-step for you.
