@@ -1,0 +1,218 @@
+Here is the **complete step-by-step execution** from your PDF in a clean format.
+
+---
+
+## STEP 1: Login to Azure DevOps
+
+Open browser and go to:
+
+```
+https://dev.azure.com
+```
+
+Login with your account.
+
+---
+
+## STEP 2: Create a New Branch (release-pipeline)
+
+1. Go to:
+
+   * Organization
+   * Project
+   * Repos
+
+2. Click **Branches**
+
+3. Click **New Branch**
+
+4. Enter:
+
+```
+Branch name: release-pipeline
+Base branch: main (or master)
+```
+
+5. Click **Create**
+
+---
+
+## STEP 3: Create Local Branch and Switch
+
+Open terminal.
+
+### 3.1 Fetch latest updates
+
+```
+git fetch
+```
+
+### 3.2 Check branches
+
+```
+git branch -a
+```
+
+You should see:
+
+```
+remotes/origin/release-pipeline
+```
+
+### 3.3 Create and switch branch
+
+```
+git checkout -b release origin/release-pipeline
+```
+
+---
+
+## STEP 3.4: Edit azure_pipelines.yml
+
+Open file:
+
+```
+vi azure_pipelines.yml
+```
+
+Add the following content:
+
+```
+trigger:
+- release-pipeline
+
+pool:
+  name: Default
+
+stages:
+
+- stage: Build
+  displayName: Build Application
+
+  jobs:
+  - job: BuildJob
+    steps:
+
+    - task: Maven@3
+      inputs:
+        mavenPomFile: 'AzurePipeline/pom.xml'
+        goals: 'clean install'
+        publishJUnitResults: true
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: 'AzurePipeline/target'
+        ArtifactName: 'app-artifact'
+
+- stage: Deploy
+  displayName: Deploy Application
+  dependsOn: Build
+  condition: succeeded()
+
+  jobs:
+  - job: DeployJob
+    steps:
+
+    - task: DownloadBuildArtifacts@0
+      displayName: Download Artifact
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'app-artifact'
+        downloadPath: '$(System.ArtifactsDirectory)'
+
+    - script: |
+        echo "Deploying application..."
+        ls $(System.ArtifactsDirectory)
+      displayName: Deploy Step
+```
+
+Save file:
+
+```
+ESC → :wq → Enter
+```
+
+---
+
+## STEP 3.5: Push Code to Repository
+
+Run:
+
+```
+git add .
+git commit -m "playbook updated to generate and deploy artifact"
+git branch -M release-pipeline
+git push -u origin release-pipeline
+```
+
+---
+
+## STEP 4: Create Pipeline in Azure
+
+1. Go to Azure DevOps
+2. Click **Pipelines → New Pipeline**
+3. Select **Azure Repos Git**
+4. Select your repository
+5. Choose:
+
+```
+Existing Azure Pipelines YAML file
+```
+
+6. Select:
+
+```
+Branch: release-pipeline
+Path: /AzurePipeline/release_pipeline.yml
+```
+
+7. Click **Continue → Save**
+
+---
+
+## STEP 5: Run Pipeline
+
+Click:
+
+```
+Run Pipeline
+```
+
+Wait for execution.
+
+---
+
+## STEP 6: Verify Deployment
+
+1. Go to:
+
+   * Pipelines
+   * Select your pipeline
+   * Open latest run
+
+2. Go to:
+
+   * Stages → Deploy
+
+3. Check logs.
+
+You should see:
+
+```
+Deploying application...
+```
+
+---
+
+## Final Result
+
+* Build stage executed
+* Artifact generated
+* Deploy stage executed
+* Deployment step completed
+
+---
+
+If any step fails, share the error output and I will guide you step by step.
