@@ -1,0 +1,293 @@
+Here is your **FULL step-by-step execution** from your uploaded PDF (Experiment 12), explained clearly in order.
+
+---
+
+# STEP 1: Login to Azure DevOps
+
+Open browser and go to:
+
+```bash
+https://dev.azure.com/
+```
+
+Login to your account. 
+
+---
+
+# STEP 2: Go to Repository Section
+
+After login:
+
+* Go to **Organization**
+* Select your **Project**
+* Click **Repos**
+
+---
+
+# STEP 3: Create New Repository
+
+* Click **New Repository**
+* Enter repository name (example: `Experiment12`)
+* Click **Create**
+
+(Shown in page 1 screenshot of your PDF)
+
+---
+
+# STEP 4: Clone Repository
+
+* Click on your repository
+* Click **Clone**
+* Copy the **HTTPS URL**
+
+(Page 2 shows clone option clearly)
+
+---
+
+# STEP 5: Create Maven Project (Terminal)
+
+Open terminal and run:
+
+### 5.1 Create folder
+
+```bash
+mkdir Lab12
+cd Lab12
+```
+
+---
+
+### 5.2 Create Maven project
+
+```bash
+mvn archetype:generate -DgroupId=com.devops.lab -DartifactId=CICD -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+```
+
+---
+
+### 5.3 Go inside project
+
+```bash
+cd CICD
+```
+
+---
+
+# STEP 6: Edit pom.xml
+
+Open file:
+
+```bash
+vi pom.xml
+```
+
+Add inside `<properties>`:
+
+```xml
+<properties>
+  <maven.compiler.source>18</maven.compiler.source>
+  <maven.compiler.target>18</maven.compiler.target>
+  <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+</properties>
+```
+
+(Same content shown on page 3)
+
+---
+
+# STEP 7: Push Project to Azure Repo
+
+Run:
+
+```bash
+git init
+git add .
+git commit -m "Initial commit"
+git remote add origin <paste-your-repo-url>
+git branch -M master
+git push -u origin master
+```
+
+(Page 4 shows these commands)
+
+---
+
+# STEP 8: Create Release Pipeline YAML
+
+Create file:
+
+```bash
+vi ReleasePipeline.yml
+```
+
+Add this content:
+
+```yaml
+trigger:
+- main
+
+pool:
+  name: Default
+
+stages:
+
+- stage: Build
+  displayName: Build Application
+  jobs:
+  - job: BuildJob
+    steps:
+    - task: Maven@3
+      inputs:
+        mavenPomFile: 'CICD/pom.xml'
+        goals: 'clean install'
+        publishJUnitResults: true
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: 'CICD/target'
+        ArtifactName: 'app-artifact'
+
+- stage: Deploy
+  displayName: Deploy Application
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - job: DeployJob
+    steps:
+    - task: DownloadBuildArtifacts@0
+      displayName: Download Artifact
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'app-artifact'
+        downloadPath: '$(System.ArtifactsDirectory)'
+
+    - script: |
+        echo "Deploying application..."
+        cp $(System.ArtifactsDirectory)/app-artifact/*.jar /tmp
+      displayName: Deploy Step
+```
+
+(YAML shown in page 4–5 images)
+
+Save:
+
+```bash
+ESC → :wq
+```
+
+---
+
+# STEP 9: Run Agent
+
+Run your Azure DevOps agent in terminal (already installed in previous experiment):
+
+```bash
+./run.sh
+```
+
+(Page 5 instruction)
+
+---
+
+# STEP 10: Create Pipeline in Azure
+
+* Go to **Pipelines**
+* Click **New Pipeline**
+* Select repo
+* Choose:
+
+  * Existing YAML file
+* Select:
+
+  * `ReleasePipeline.yml`
+
+Click **Run**
+
+---
+
+# STEP 11: Verify Continuous Integration (CI)
+
+### 11.1 Modify code
+
+```bash
+cd ~/Lab12/CICD/src/main/java/com/devops/lab
+vi App.java
+```
+
+Add:
+
+```java
+System.out.println("Testing Continuous Integration");
+```
+
+---
+
+### 11.2 Push changes
+
+```bash
+git add .
+git commit -m "Testing CI/CD pipeline"
+git push
+```
+
+---
+
+### 11.3 Result
+
+* Pipeline triggers automatically after push
+  (as shown in page 6)
+
+---
+
+# STEP 12: Verify Continuous Deployment (CD)
+
+After build success:
+
+* Artifact is created
+* Deploy stage runs automatically
+
+(Page 6–7 screenshots show this)
+
+---
+
+### Check logs
+
+Go to pipeline → Deploy stage → Logs
+
+You should see deployment steps executed.
+
+---
+
+### Check deployment
+
+Check file:
+
+```bash
+cd /tmp
+ls
+```
+
+You should see:
+
+```
+CICD-1.0-SNAPSHOT.jar
+```
+
+(Page 8 terminal screenshot confirms this)
+
+---
+
+# FINAL OUTPUT
+
+* CI works: pipeline triggers on code push
+* CD works: deployment runs automatically
+* JAR file copied to `/tmp`
+
+---
+
+If you want, I can next:
+
+* Give you **exact commands you should type line-by-line (like lab exam format)**
+* Or help fix errors live if something is not working
