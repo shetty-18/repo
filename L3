@@ -1,0 +1,90 @@
+STEP 1: Check Gradle Installation
+
+Open terminal and run:
+
+gradle -v
+
+ If version shows → OK
+ If not → install Gradle first
+
+ STEP 2: Create Project
+mkdir gradleworkspace
+cd gradleworkspace
+ STEP 3: Initialize Gradle Project
+gradle init
+
+ Choose options like:
+
+Type → 1 (Application)
+Language → Java
+Java version → 21 (or your version)
+Build script → Groovy
+Test framework → JUnit
+ STEP 4: Project Structure
+
+After init, you will see:
+
+gradleworkspace/
+ ├── build.gradle
+ ├── settings.gradle
+ ├── src/
+ STEP 5: Edit build.gradle
+
+Open file:
+
+vim build.gradle
+
+Add/confirm this:
+
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'com.example'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.13.2'
+}
+
+application {
+    mainClass = 'org.example.App'
+}
+
+task hello {
+    doLast {
+        println 'Hello, Gradle!'
+    }
+}
+
+ (This is shown in page 2 image of your PDF)
+
+ STEP 6: (Optional) Edit settings.gradle
+vim settings.gradle
+
+ Remove or comment plugin part (as shown in page 3)
+
+ STEP 7: Build Project
+gradle build
+
+ What happens:
+
+Compile code
+Run tests
+Create JAR file
+ STEP 8: Run Application
+gradle run
+
+ Runs your main Java class
+
+ STEP 9: Run Custom Task
+gradle hello
+
+👉 Output:
+
+Hello, Gradle!
