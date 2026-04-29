@@ -1,1 +1,231 @@
+Here is **Experiment 7 (Ansible) — COMPLETE STEP-BY-STEP EXECUTION**, exactly how you should type and run everything.
+
+---
+
+# PART 1: Install Ansible
+
+## Step 1: Update system
+
+```bash
+sudo apt update
+```
+
+---
+
+## Step 2: Install Ansible
+
+```bash
+sudo apt install ansible -y
+```
+
+---
+
+## Step 3: Check installation
+
+```bash
+ansible --version
+```
+
+Expected: version details should display
+(as mentioned on page 1) 
+
+---
+
+# PART 2: Setup Working Directory
+
+## Step 4: Create folder
+
+```bash
+mkdir ansible_lab
+cd ansible_lab
+```
+
+Check:
+
+```bash
+pwd
+```
+
+---
+
+# PART 3: Create Inventory File
+
+## Step 5: Create inventory file
+
+```bash
+nano inventory.ini
+```
+
+Paste this:
+
+```ini
+[servers]
+localhost ansible_connection=local
+```
+
+Save:
+
+```
+CTRL + X
+Y
+ENTER
+```
+
+Explanation (from page 2):
+
+* servers → group name
+* localhost → target machine
+* ansible_connection=local → run on same system 
+
+---
+
+## Step 6: Test inventory
+
+```bash
+ansible -i inventory.ini servers -m ping
+```
+
+Expected output:
+
+```text
+localhost | SUCCESS => {
+    "ping": "pong"
+}
+```
+
+(as shown in page 2 screenshot) 
+
+---
+
+# PART 4: Understand Module (Test Command)
+
+## Step 7: Install nginx using module (optional test)
+
+```bash
+ansible -i inventory.ini servers -m apt -a "name=nginx state=present" --become
+```
+
+* `apt` → installs package
+* `--become` → run as sudo
+
+(from page 2 explanation) 
+
+---
+
+# PART 5: Create Playbook
+
+## Step 8: Create playbook file
+
+```bash
+nano install_nginx.yml
+```
+
+Paste this:
+
+```yaml
+- name: Install and start nginx
+  hosts: servers
+  become: yes
+
+  tasks:
+    - name: Install nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Start nginx service
+      service:
+        name: nginx
+        state: started
+```
+
+Save:
+
+```
+CTRL + X
+Y
+ENTER
+```
+
+Explanation (from page 3):
+
+* name → description
+* hosts → target group
+* become → run as sudo
+* tasks → list of actions 
+
+---
+
+# PART 6: Run Playbook
+
+## Step 9: Execute playbook
+
+```bash
+ansible-playbook -i inventory.ini install_nginx.yml
+```
+
+If password required:
+
+```bash
+ansible-playbook -i inventory.ini install_nginx.yml --ask-become-pass
+```
+
+Expected:
+
+```text
+TASK [Install nginx] → changed
+TASK [Start nginx service] → ok
+```
+
+(as shown in page 4 output) 
+
+---
+
+# PART 7: Verify Configuration
+
+## Step 10: Check nginx status
+
+```bash
+systemctl status nginx
+```
+
+Expected:
+
+```text
+active (running)
+```
+
+---
+
+# PART 8: Check Syntax (IMPORTANT)
+
+```bash
+ansible-playbook install_nginx.yml --syntax-check
+```
+
+---
+
+# IMPORTANT NOTES
+
+From page 4:
+
+1. Playbook must start with `-`
+2. YAML indentation must be correct
+3. Use syntax check to avoid errors 
+
+---
+
+# FINAL RESULT
+
+After execution:
+
+* Ansible installed
+* Inventory created
+* Playbook created
+* Nginx installed automatically
+* Service started
+
+---
+
+If anything fails (very common with Ansible), send the exact error — I’ll debug it step-by-step.
 
